@@ -34,6 +34,45 @@ router.put('/todos', async(req, res, next) => {
   res.json(await todos(res));
 });
 
+// curl -X POST http://localhost:3001/todos/complete-all
+router.post('/todos/complete-all', async(req, res, next) => {
+  const data = await redisClient.hgetall('rect-demo1-todos');
+
+  // all or all not
+  let allCompleted = true;
+  _.each(data, (v) => {
+    const todo = JSON.parse(v);
+    if (!todo.completed) {
+      allCompleted = false;
+      return false;
+    }
+    return true;
+  });
+
+  await Promise.all(_.map(data, async (v, id) => {
+    const todo = JSON.parse(v);
+    todo.completed = !allCompleted;
+    await redisClient.hset('rect-demo1-todos', id, JSON.stringify(todo));
+  }));
+
+  res.json(await todos(res));
+});
+
+
+// curl -X POST http://localhost:3001/todos/clear_completed
+router.post('/todos/clear-completed', async(req, res, next) => {
+  const data = await redisClient.hgetall('rect-demo1-todos');
+
+  await Promise.all(_.map(data, async (v) => {
+    const todo = JSON.parse(v);
+    if (todo.completed) {
+      await redisClient.hdel('rect-demo1-todos', todo.id);
+    }
+  }));
+
+  res.json(await todos(res));
+});
+
 
 //  curl -X DELETE http://localhost:3001/todos/1
 router.delete('/todos/:id', async(req, res, next) => {

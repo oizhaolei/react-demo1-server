@@ -6,8 +6,9 @@ module.exports = {
   apps: [{
     name: 'react-demo1-server',
     script: 'index.js',
-    interpreter: 'babel-node',
+    exec_interpreter: './node_modules/.bin/babel-node',
     watch: true,
+    exec_mode: 'fork',
     env: {
       PORT: 3001,
       NODE_ENV: 'dev',
