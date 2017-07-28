@@ -39,20 +39,20 @@ router.post('/todos/complete-all', async(req, res, next) => {
   const data = await redisClient.hgetall('rect-demo1-todos');
 
   // all or all not
-  let allCompleted = true;
+  let completed = true;
   _.each(data, (v) => {
     const todo = JSON.parse(v);
     if (!todo.completed) {
-      allCompleted = false;
+      completed = false;
       return false;
     }
     return true;
   });
 
+  completed = !completed;
   await Promise.all(_.map(data, async (v, id) => {
     const todo = JSON.parse(v);
-    todo.completed = !allCompleted;
-    await redisClient.hset('rect-demo1-todos', id, JSON.stringify(todo));
+    await redisClient.hset('rect-demo1-todos', id, JSON.stringify({ ...todo, completed }));
   }));
 
   res.json(await todos(res));
