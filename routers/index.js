@@ -27,7 +27,11 @@ router.get('/todos', async(req, res, next) => {
 
 // curl -X PUT http://localhost:3001/todos -H "Content-Type: application/json" -d '{"id": 4, "text": "it is a good day to die", "completed": false}'
 router.put('/todos', async(req, res, next) => {
-  const { id, text, completed } = req.body;
+  const { text, completed } = req.body;
+  let { id } = req.body;
+  if (!id) {
+    id = new Date() / 1000;
+  }
 
   await redisClient.hset('rect-demo1-todos', id, JSON.stringify({ id, text, completed }));
 
